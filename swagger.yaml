@@ -28,6 +28,15 @@ paths:
         - name: "cid"
           in: "path"
           description: "The CID of the user."
+  /v2/user/{cid}/notes:
+    get:
+      tags:
+        - "user"
+      summary: "Fetches the users training notes. This will only return notes that were made by your FIR."
+      parameters:
+        - name: "cid"
+          in: "path"
+          description: "The CID of the user."
   /v2/facility/roster:
     get:
       tags:
