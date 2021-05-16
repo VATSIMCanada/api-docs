@@ -1,7 +1,7 @@
 ---
 swagger: "2.0"
 info:
-  description: "VATCAN Documentation."
+  description: "VATCAN Documentation. API routes that don't require authentication will be marked by a gray \"unlocked\" lock icon."
   version: "2.0"
   title: "VATSIM Canada"
   contact:
@@ -12,6 +12,7 @@ tags:
   - name: "events"
   - name: "user"
   - name: "facility"
+  - name: "division"
 externalDocs:
     description: "Generate your Facility API Key"
     url: "https://vatcan.ca/manage/facilities"
@@ -19,6 +20,11 @@ schemes:
 - "https"
 - "http"
 paths:
+  /events:
+    get:
+      tags:
+        - "events"
+      summary: "Pulls the next 5 events."
   /v2/user/{cid}:
     get:
       tags:
@@ -28,6 +34,7 @@ paths:
         - name: "cid"
           in: "path"
           description: "The CID of the user."
+      security: []
   /v2/user/{cid}/notes:
     get:
       tags:
@@ -37,16 +44,28 @@ paths:
         - name: "cid"
           in: "path"
           description: "The CID of the user."
+      security: []
   /v2/facility/roster:
     get:
       tags:
         - "facility"
       summary: "Pulls the facility roster. This will include visitors, home controllers, and staff."
-  /events:
+      security: []
+  /v2/facility/events:
     get:
       tags:
-        - "events"
-      summary: "Pulls the next 5 events."
+       - "facility"
+      summary: "Pulls the next FIR events."
+      security: []
+  /v2/division/events:
+    get:
+      tags:
+        - "division"
+      summary: "Pull the next 15 VATCAN events."
+
+security:
+  - ApiKeyAuth: []
+
 securityDefinitions:
   authorization_header:
     type: "apiKey"
