@@ -1,7 +1,7 @@
 ---
 swagger: "2.0"
 info:
-  description: "VATCAN Documentation. API routes that don't require authentication will be marked by a gray \"unlocked\" lock icon."
+  description: "VATCAN Documentation. API routes that don't require authentication will be marked by a gray \"unlocked\" lock icon"
   version: "2.0"
   title: "VATSIM Canada"
   contact:
