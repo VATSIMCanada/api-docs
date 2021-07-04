@@ -51,6 +51,12 @@ paths:
         - "facility"
       summary: "Pulls the facility roster. This will include visitors, home controllers, and staff."
       security: []
+  /v2/facility/activity:
+    get:
+      tags:
+        - "facility"
+      summary: "Pulls the FIR activity from the last 4 weeks."
+      security: []
   /v2/facility/events:
     get:
       tags:
