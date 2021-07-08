@@ -45,6 +45,41 @@ paths:
           in: "path"
           description: "The CID of the user."
       security: []
+  /v2/user/{cid}/notes/create:
+    post:
+      tags:
+        - "user"
+      summary: "Creates a new training note for this user."
+      security: []
+      parameters:
+        - name: "cid"
+          in: "path"
+          required: true
+          description: "CID of the user."
+        - name: "instructor_cid"
+          in: "body"
+          schema:
+            type: "integer"
+          required: true
+          description: "The CID of the instructor."
+        - name: "position_trained"
+          in: "body"
+          schema:
+            type: "string"
+          required: true
+          description: "The position trained on."
+        - name: "note"
+          in: "body"
+          schema:
+            type: "string"
+          required: true
+          description: "The training note."
+       - name: "session_type"
+         in: "body"
+         schema:
+           type: "integer"
+         required: true
+         description: "The session type. 0 = Sweatbox; 1 = OJT (Monitoring); 2 = OTS; 3 = Other"
   /v2/facility/roster:
     get:
       tags:
