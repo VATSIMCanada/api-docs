@@ -34,4 +34,5 @@ They can all happen if listed on the route.
 ```
 Jordan Jolenaar     (1429747) - github.com/JordannDev
 Kolby Dunning       (1427371) - github.com/kolbyd
+Cody Newman         (863269) -  github.com/codeman02
 ```

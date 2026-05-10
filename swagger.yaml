@@ -44,43 +44,20 @@ paths:
         - AuthorizationHeader: []
         - QueryString: []
       parameters:
-        - in: path
-          name: cid
-          schema:
-            type: integer
-          required: true
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: string
-                    enum:
-                      - User fetched successfully.
-                  data:
-                    $ref: '#/components/schemas/UserWithFIR'
-        '404':
-          description: ''
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    enum:
-                      - This user does not exist.
-                      - This facility does not exist.
-        '401.1':
-          $ref: '#/components/responses/AuthorizationWithoutToken'
-        '401.2':
-          $ref: '#/components/responses/NoApiKey'
-        '401.3':
-          $ref: '#/components/responses/InvalidApiKey'
+        - name: "cid"
+          in: "path"
+          description: "The CID of the user."
+      security: []
+  /v2/user/{cid}/cbt:
+    get:
+      tags:
+        - "user"
+      summary: "Fetches the users CBT Progress. This will only return CBT progress for users in your FIR."
+      parameters:
+        - name: "cid"
+          in: "path"
+          description: "The CID of the user."
+      security: []
   /v2/user/{cid}/notes:
     get:
       summary: >-
