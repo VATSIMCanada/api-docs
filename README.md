@@ -26,6 +26,10 @@ If your project requires an API key, send an email to `tech@vatcan.ca`.
 Feel free to make a PR and add to Swagger. We are still trying to get everything
 added, so things may be missing in some places (ie response codes, response examples, models, etc)
 
+## 401.1? 401.2?
+We are unable to provide multiple schemas for a response code so the 401.# allows us to be able to provide those for viewing.
+They can all happen if listed on the route.
+
 ## Contributors
 ```
 Jordan Jolenaar     (1429747) - github.com/JordannDev
