@@ -35,6 +35,16 @@ paths:
           in: "path"
           description: "The CID of the user."
       security: []
+  /v2/user/{cid}/cbt:
+    get:
+      tags:
+        - "user"
+      summary: "Fetches the users CBT Progress. This will only return CBT progress for users in your FIR."
+      parameters:
+        - name: "cid"
+          in: "path"
+          description: "The CID of the user."
+      security: []
   /v2/user/{cid}/notes:
     get:
       tags:

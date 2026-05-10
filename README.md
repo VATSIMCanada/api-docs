@@ -30,4 +30,5 @@ added, so things may be missing in some places (ie response codes, response exam
 ```
 Jordan Jolenaar     (1429747) - github.com/JordannDev
 Kolby Dunning       (1427371) - github.com/kolbyd
+Cody Newman         (863269) -  github.com/codeman02
 ```
