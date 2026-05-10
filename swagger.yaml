@@ -26,7 +26,7 @@ paths:
         - events
       responses:
         '200':
-          description: A list of upcoming events.
+          description: A list of events.
           content:
             application/json:
               schema:
@@ -51,20 +51,18 @@ paths:
             type: integer
       responses:
         '200':
-          description: User details fetched successfully.
+          description: Success
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
         '401':
           $ref: '#/components/responses/InvalidApiKey'
-        '404':
-          description: User not found.
   /v2/user/{cid}/cbt:
     get:
       tags:
         - user
-      summary: "Fetches the users CBT Progress. This will only return CBT progress for users in your FIR."
+      summary: "Fetches the users CBT Progress."
       parameters:
         - name: cid
           in: path
@@ -77,23 +75,14 @@ paths:
         - QueryString: []
       responses:
         '200':
-          description: CBT Progress fetched successfully.
+          description: Success
           content:
             application/json:
               schema:
                 type: object
-                properties:
-                  cid:
-                    type: integer
-                  progress:
-                    type: array
-                    items:
-                      type: object
   /v2/user/{cid}/notes:
     get:
-      summary: >-
-        Returns a user's notes by their CID. Please note this endpoint only
-        returns training notes made by your FIR.
+      summary: Returns a user's notes by their CID.
       tags:
         - user
         - v2
@@ -108,7 +97,7 @@ paths:
           required: true
       responses:
         '200':
-          description: Notes fetched successfully.
+          description: Success
           content:
             application/json:
               schema:
@@ -116,15 +105,10 @@ paths:
                 properties:
                   success:
                     type: string
-                    example: Notes fetched successfully.
                   notes:
                     type: array
                     items:
                       $ref: '#/components/schemas/TrainingNote'
-        '403':
-          description: Permission denied.
-        '404':
-          description: User or facility does not exist.
         '401':
           $ref: '#/components/responses/InvalidApiKey'
   /v2/user/{cid}/notes/create:
@@ -157,20 +141,9 @@ paths:
                   type: string
                 session_type:
                   type: integer
-                  minimum: 0
-                  maximum: 3
       responses:
         '200':
-          description: Note created.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: string
-                  sandbox:
-                    type: boolean
+          description: Success
         '401':
           $ref: '#/components/responses/InvalidApiKey'
   /v2/facility/roster:
@@ -184,7 +157,7 @@ paths:
         - QueryString: []
       responses:
         '200':
-          description: Roster fetched successfully.
+          description: Success
           content:
             application/json:
               schema:
@@ -218,18 +191,11 @@ paths:
         - QueryString: []
       responses:
         '200':
-          description: Activity fetched successfully.
+          description: Success
           content:
             application/json:
               schema:
                 type: object
-                properties:
-                  success:
-                    type: string
-                  data:
-                    type: object
-                    additionalProperties:
-                      $ref: '#/components/schemas/Activity'
         '401':
           $ref: '#/components/responses/InvalidApiKey'
   /v2/facility/events:
@@ -243,14 +209,12 @@ paths:
         - QueryString: []
       responses:
         '200':
-          description: Events fetched successfully.
+          description: Success
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  success:
-                    type: string
                   data:
                     type: array
                     items:
@@ -265,14 +229,12 @@ paths:
         - v2
       responses:
         '200':
-          description: Events fetched successfully.
+          description: Success
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  success:
-                    type: string
                   data:
                     type: array
                     items:
@@ -307,12 +269,22 @@ components:
               nullable: true
               items:
                 type: string
+        forum_event_id:
+          type: integer
+        facilities:
+          type: integer
         created_at:
           type: string
           format: date-time
         updated_at:
           type: string
           format: date-time
+        forum_url:
+          type: string
+        start_pretty:
+          type: string
+        end_pretty:
+          type: string
     User:
       type: object
       properties:
@@ -324,11 +296,28 @@ components:
           type: string
         facility:
           type: integer
+        facility_join:
+          type: string
         rating:
           type: integer
+        last_active:
+          type: string
+        flag_basic:
+          type: boolean
+        flag_is_visitor:
+          type: boolean
+        flag_xferOverride:
+          type: boolean
+        last_api_check:
+          type: string
         created_at:
           type: string
           format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        email_preferences:
+          type: integer
     UserWithFIR:
       allOf:
         - $ref: '#/components/schemas/User'
@@ -345,8 +334,18 @@ components:
           type: string
         name_short:
           type: string
+        website_url:
+          type: string
+        fir_description:
+          type: string
         is_fir:
           type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
     TrainingNote:
       type: object
       properties:
@@ -356,6 +355,8 @@ components:
           type: integer
         instructor_cid:
           type: integer
+        facility_id:
+          type: integer
         training_note:
           type: string
         session_type:
@@ -364,6 +365,14 @@ components:
         created_at:
           type: string
           format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        friendly_time:
+          type: string
+          format: date
+        instructor_name:
+          type: string
     Activity:
       type: object
       properties:
@@ -373,6 +382,12 @@ components:
           type: integer
         time:
           type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
   securitySchemes:
     AuthorizationHeader:
       type: apiKey
@@ -385,7 +400,7 @@ components:
       in: query
   responses:
     InvalidApiKey:
-      description: Unauthorized - Invalid or missing API Key.
+      description: API key error
       content:
         application/json:
           schema:
@@ -393,6 +408,5 @@ components:
             properties:
               error:
                 type: string
-                example: Invalid API key.
               message:
                 type: string
