@@ -24,10 +24,9 @@ paths:
       summary: Returns list of next 5 events (for home page).
       tags:
         - events
-      security: []
       responses:
         '200':
-          description: ''
+          description: A list of upcoming events.
           content:
             application/json:
               schema:
@@ -44,20 +43,52 @@ paths:
         - AuthorizationHeader: []
         - QueryString: []
       parameters:
-        - name: "cid"
-          in: "path"
-          description: "The CID of the user."
-      security: []
+        - name: cid
+          in: path
+          required: true
+          description: The CID of the user.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User details fetched successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/InvalidApiKey'
+        '404':
+          description: User not found.
   /v2/user/{cid}/cbt:
     get:
       tags:
-        - "user"
+        - user
       summary: "Fetches the users CBT Progress. This will only return CBT progress for users in your FIR."
       parameters:
-        - name: "cid"
-          in: "path"
-          description: "The CID of the user."
-      security: []
+        - name: cid
+          in: path
+          required: true
+          description: The CID of the user.
+          schema:
+            type: integer
+      security:
+        - AuthorizationHeader: []
+        - QueryString: []
+      responses:
+        '200':
+          description: CBT Progress fetched successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cid:
+                    type: integer
+                  progress:
+                    type: array
+                    items:
+                      type: object
   /v2/user/{cid}/notes:
     get:
       summary: >-
@@ -77,7 +108,7 @@ paths:
           required: true
       responses:
         '200':
-          description: ''
+          description: Notes fetched successfully.
           content:
             application/json:
               schema:
@@ -85,42 +116,16 @@ paths:
                 properties:
                   success:
                     type: string
-                    enum:
-                      - Notes fetched successfully.
+                    example: Notes fetched successfully.
                   notes:
                     type: array
                     items:
                       $ref: '#/components/schemas/TrainingNote'
         '403':
-          description: ''
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    enum:
-                      - >-
-                        You do not have permission to view this controllers
-                        notes.
+          description: Permission denied.
         '404':
-          description: ''
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    enum:
-                      - This user does not exist.
-                      - This facility does not exist.
-        '401.1':
-          $ref: '#/components/responses/AuthorizationWithoutToken'
-        '401.2':
-          $ref: '#/components/responses/NoApiKey'
-        '401.3':
+          description: User or facility does not exist.
+        '401':
           $ref: '#/components/responses/InvalidApiKey'
   /v2/user/{cid}/notes/create:
     post:
@@ -152,10 +157,11 @@ paths:
                   type: string
                 session_type:
                   type: integer
-                  pattern: '[0-3]'
+                  minimum: 0
+                  maximum: 3
       responses:
         '200':
-          description: ''
+          description: Note created.
           content:
             application/json:
               schema:
@@ -163,56 +169,9 @@ paths:
                 properties:
                   success:
                     type: string
-                    enum:
-                      - Training note created.
                   sandbox:
                     type: boolean
-                    example: false
-                    description: True if a sandbox API key was used.
-        '400':
-          description: ''
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    enum:
-                      - Validation failure.
-                  hint:
-                    type: array
-                    items: {}
-        '403':
-          description: ''
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    enum:
-                      - >-
-                        You do not have permission to view this controllers
-                        notes.
-        '404':
-          description: ''
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    enum:
-                      - This user does not exist.
-                      - This facility does not exist.
-        '401.1':
-          $ref: '#/components/responses/AuthorizationWithoutToken'
-        '401.2':
-          $ref: '#/components/responses/NoApiKey'
-        '401.3':
+        '401':
           $ref: '#/components/responses/InvalidApiKey'
   /v2/facility/roster:
     get:
@@ -225,7 +184,7 @@ paths:
         - QueryString: []
       responses:
         '200':
-          description: ''
+          description: Roster fetched successfully.
           content:
             application/json:
               schema:
@@ -233,28 +192,11 @@ paths:
                 properties:
                   success:
                     type: string
-                    enum:
-                      - Fetched successfully
                   data:
                     type: object
                     properties:
                       facility:
                         $ref: '#/components/schemas/Facility'
-                      staff:
-                        type: object
-                        properties:
-                          chief:
-                            $ref: '#/components/schemas/User'
-                          deputy:
-                            type: object
-                          ci:
-                            type: object
-                          ec:
-                            type: object
-                          fe:
-                            type: object
-                          wm:
-                            type: object
                       controllers:
                         type: array
                         items:
@@ -263,22 +205,7 @@ paths:
                         type: array
                         items:
                           $ref: '#/components/schemas/UserWithFIR'
-        '404':
-          description: ''
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    enum:
-                      - This facility does not exist.
-        '401.1':
-          $ref: '#/components/responses/AuthorizationWithoutToken'
-        '401.2':
-          $ref: '#/components/responses/NoApiKey'
-        '401.3':
+        '401':
           $ref: '#/components/responses/InvalidApiKey'
   /v2/facility/activity:
     get:
@@ -291,7 +218,7 @@ paths:
         - QueryString: []
       responses:
         '200':
-          description: ''
+          description: Activity fetched successfully.
           content:
             application/json:
               schema:
@@ -299,31 +226,11 @@ paths:
                 properties:
                   success:
                     type: string
-                    enum:
-                      - Fetched successfully.
                   data:
                     type: object
-                    properties:
-                      cid:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/Activity'
-        '404':
-          description: ''
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    enum:
-                      - This facility does not exist.
-        '401.1':
-          $ref: '#/components/responses/AuthorizationWithoutToken'
-        '401.2':
-          $ref: '#/components/responses/NoApiKey'
-        '401.3':
+                    additionalProperties:
+                      $ref: '#/components/schemas/Activity'
+        '401':
           $ref: '#/components/responses/InvalidApiKey'
   /v2/facility/events:
     get:
@@ -336,7 +243,7 @@ paths:
         - QueryString: []
       responses:
         '200':
-          description: ''
+          description: Events fetched successfully.
           content:
             application/json:
               schema:
@@ -344,28 +251,11 @@ paths:
                 properties:
                   success:
                     type: string
-                    enum:
-                      - Fetched successfully.
                   data:
                     type: array
                     items:
                       $ref: '#/components/schemas/Event'
-        '404':
-          description: ''
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    enum:
-                      - This facility does not exist.
-        '401.1':
-          $ref: '#/components/responses/AuthorizationWithoutToken'
-        '401.2':
-          $ref: '#/components/responses/NoApiKey'
-        '401.3':
+        '401':
           $ref: '#/components/responses/InvalidApiKey'
   /v2/division/events:
     get:
@@ -373,10 +263,9 @@ paths:
       tags:
         - division
         - v2
-      security: []
       responses:
         '200':
-          description: ''
+          description: Events fetched successfully.
           content:
             application/json:
               schema:
@@ -384,8 +273,6 @@ paths:
                 properties:
                   success:
                     type: string
-                    enum:
-                      - Fetched successfully
                   data:
                     type: array
                     items:
@@ -413,35 +300,19 @@ components:
             arrival:
               type: array
               nullable: true
-              example:
-                - CYYZ
-                - CYVR
               items:
                 type: string
             departure:
               type: array
               nullable: true
-              example: null
               items:
                 type: string
-        forum_event_id:
-          type: integer
-          description: Event ID on forums.vatcan.ca
-        facilities:
-          type: integer
-          description: Bitmap of the VATCAN FIRs responsible for the event.
         created_at:
           type: string
           format: date-time
         updated_at:
           type: string
           format: date-time
-        forum_url:
-          type: string
-        start_pretty:
-          type: string
-        end_pretty:
-          type: string
     User:
       type: object
       properties:
@@ -453,68 +324,29 @@ components:
           type: string
         facility:
           type: integer
-          description: ID of the user's FIR.
-        facility_join:
-          type: string
         rating:
           type: integer
-          description: User's VATSIM rating.
-        last_active:
-          type: string
-          description: Last time user accessed website.
-        flag_basic:
-          type: boolean
-          description: True if user has not completed Basic ATC Exam.
-        flag_is_visitor:
-          type: boolean
-          description: True if user is outside of VATCAN.
-        flag_xferOverride:
-          type: boolean
-          description: >-
-            True if user has been granted a transfer override (to avoid
-            restrictions).
-        last_api_check:
-          type: string
-          description: Last time user was against VATSIM's API.
         created_at:
           type: string
           format: date-time
-        updated_at:
-          type: string
-          format: date-time
-        email_preferences:
-          type: integer
-          description: Bitmap of user's email preferences.
     UserWithFIR:
       allOf:
         - $ref: '#/components/schemas/User'
-        - properties:
+        - type: object
+          properties:
             fir:
-              type: object
               $ref: '#/components/schemas/Facility'
     Facility:
       type: object
       properties:
         id:
           type: integer
-          description: ID of the FIR.
         name_long:
           type: string
         name_short:
           type: string
-        website_url:
-          type: string
-        fir_description:
-          type: string
         is_fir:
           type: boolean
-          description: True if it is a real facility.
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
     TrainingNote:
       type: object
       properties:
@@ -524,29 +356,14 @@ components:
           type: integer
         instructor_cid:
           type: integer
-        facility_id:
-          type: integer
-          description: ID of the FIR the note was created in.
         training_note:
           type: string
         session_type:
           type: integer
-          enum:
-            - 0
-            - 1
-            - 2
-            - 3
+          enum: [0, 1, 2, 3]
         created_at:
           type: string
           format: date-time
-        updated_at:
-          type: string
-          format: date-time
-        friendly_time:
-          type: string
-          format: date
-        instructor_name:
-          type: string
     Activity:
       type: object
       properties:
@@ -556,61 +373,19 @@ components:
           type: integer
         time:
           type: string
-          description: Time in minutes that the user has controlled in your facility.
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
   securitySchemes:
     AuthorizationHeader:
       type: apiKey
       name: Authorization
       in: header
-      description: 'For this type of authentication, follow the format: `Token [api_key]`.'
+      description: 'Format: `Token [api_key]`'
     QueryString:
       type: apiKey
       name: api_key
       in: query
   responses:
-    AuthorizationWithoutToken:
-      description: Authorization header without token provided.
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-                enum:
-                  - Invalid API key.
-              message:
-                type: string
-                enum:
-                  - >-
-                    Authorization header was provided, but the provided value
-                    did not prefix with "Token".
-    NoApiKey:
-      description: No API key found in request.
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-                enum:
-                  - Invalid API key.
-              message:
-                type: string
-                enum:
-                  - >-
-                    No API key was found in the body, or query params of the
-                    request. If you are attempting to use the Authorization
-                    header, it was not included in your request.
     InvalidApiKey:
-      description: API key does not exist.
+      description: Unauthorized - Invalid or missing API Key.
       content:
         application/json:
           schema:
@@ -618,7 +393,6 @@ components:
             properties:
               error:
                 type: string
-                enum:
-                  - Invalid API key.
-              api_key:
+                example: Invalid API key.
+              message:
                 type: string
