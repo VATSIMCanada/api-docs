@@ -142,13 +142,13 @@ paths:
               properties:
                 instructor_cid:
                   type: integer
-                  example: 1442820
+                  example: 863269
                 position:
                   type: string
                   example: "CYEG_APP"
                 note:
                   type: string
-                  example: "This guy the guy! Note test"
+                  example: "I am a Note"
                 session_type:
                   type: integer
                   example: 0
