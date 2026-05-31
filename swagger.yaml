@@ -142,13 +142,13 @@ paths:
               properties:
                 instructor_cid:
                   type: integer
-                  example: 1442820
+                  example: 863269
                 position:
                   type: string
                   example: "CYEG_APP"
                 note:
                   type: string
-                  example: "This guy the guy! Note test"
+                  example: "I am a Note"
                 session_type:
                   type: integer
                   example: 0
@@ -186,25 +186,25 @@ paths:
                         type: object
                         properties:
                           chief:
-                            $ref: '#/components/schemas/User'
+                            $ref: '#/components/schemas/RosterUser'
                           deputy:
-                            $ref: '#/components/schemas/User'
+                            $ref: '#/components/schemas/RosterUser'
                           ci:
-                            $ref: '#/components/schemas/User'
+                            $ref: '#/components/schemas/RosterUser'
                           ec:
-                            $ref: '#/components/schemas/User'
+                            $ref: '#/components/schemas/RosterUser'
                           fe:
-                            $ref: '#/components/schemas/User'
+                            $ref: '#/components/schemas/RosterUser'
                           wm:
-                            $ref: '#/components/schemas/User'
+                            $ref: '#/components/schemas/RosterUser'
                       controllers:
                         type: array
                         items:
-                          $ref: '#/components/schemas/User'
+                          $ref: '#/components/schemas/RosterUser'
                       visitors:
                         type: array
                         items:
-                          $ref: '#/components/schemas/UserWithFIR'
+                          $ref: '#/components/schemas/RosterUser'
         '401':
           $ref: '#/components/responses/InvalidApiKey'
 
@@ -412,6 +412,10 @@ components:
           type: integer
         welcome_sent:
           type: integer
+        is_instructor:
+          type: boolean
+        is_mentor:
+          type: boolean
         instructor:
           type: integer
           nullable: true
@@ -426,13 +430,70 @@ components:
           items:
             $ref: '#/components/schemas/VisitingFacility'
 
-    UserWithFIR:
-      allOf:
-        - $ref: '#/components/schemas/User'
-        - type: object
-          properties:
-            fir:
-              $ref: '#/components/schemas/Facility'
+    RosterUser:
+      type: object
+      properties:
+        cid:
+          type: integer
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+        facility:
+          type: integer
+        facility_join:
+          type: string
+          nullable: true
+        rating:
+          type: integer
+        last_active:
+          type: string
+        flag_basic:
+          type: integer
+        flag_is_visitor:
+          type: integer
+        flag_xferOverride:
+          type: integer
+        flag_visitOverride:
+          type: integer
+        flag_soloOverride:
+          type: integer
+        transfer_visit_lock:
+          type: string
+          nullable: true
+        last_api_check:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        email_preferences:
+          type: integer
+        name_privacy_mode:
+          type: integer
+        welcome_sent:
+          type: integer
+        is_instructor:
+          type: boolean
+        is_mentor:
+          type: boolean
+        instructor:
+          type: integer
+          nullable: true
+        integrations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Integration'
+        fir:
+          $ref: '#/components/schemas/Facility'
+        visiting_facilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/VisitingFacility'
 
     Facility:
       type: object
