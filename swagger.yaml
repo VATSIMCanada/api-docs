@@ -45,7 +45,105 @@ paths:
                     type: string
                     example: "User fetched successfully."
                   data:
-                    $ref: '#/components/schemas/User'
+                    type: object
+                    properties:
+                      cid:
+                        type: integer
+                        example: 123456
+                      first_name:
+                        type: string
+                        example: "First"
+                      last_name:
+                        type: string
+                        example: "Last"
+                      facility:
+                        type: integer
+                        example: 1
+                      facility_join:
+                        type: string
+                        nullable: true
+                        example: null
+                      rating:
+                        type: integer
+                        example: 10
+                      last_active:
+                        type: string
+                        example: "2026-05-10 01:46:09"
+                      flag_basic:
+                        type: integer
+                        example: 0
+                      flag_is_visitor:
+                        type: integer
+                        example: 0
+                      flag_xferOverride:
+                        type: integer
+                        example: 0
+                      flag_visitOverride:
+                        type: integer
+                        example: 0
+                      flag_soloOverride:
+                        type: integer
+                        example: 0
+                      transfer_visit_lock:
+                        type: string
+                        nullable: true
+                        example: null
+                      last_api_check:
+                        type: string
+                        example: "2026-05-30 15:01:31"
+                      created_at:
+                        type: string
+                        example: "2021-03-27T01:55:14.000000Z"
+                      updated_at:
+                        type: string
+                        example: "2026-05-30T15:01:31.000000Z"
+                      email_preferences:
+                        type: integer
+                        example: 2047
+                      name_privacy_mode:
+                        type: integer
+                        example: 1
+                      welcome_sent:
+                        type: integer
+                        example: 1
+                      instructor:
+                        type: integer
+                        nullable: true
+                        example: 123321
+                      fir:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            example: 1
+                          name_long:
+                            type: string
+                            example: "XX FIR"
+                          name_short:
+                            type: string
+                            example: "CXXX"
+                          name_friendly:
+                            type: string
+                            example: "XX FIR (CXXX)"
+                          website_url:
+                            type: string
+                            example: "https://website.ca"
+                          fir_description:
+                            type: string
+                            example: "FIR is FIR!"
+                          is_fir:
+                            type: integer
+                            example: 1
+                          created_at:
+                            type: string
+                            example: "2020-08-12T15:16:18.000000Z"
+                          updated_at:
+                            type: string
+                            example: "2023-11-17T19:43:28.000000Z"
+                      visiting_facilities:
+                        type: array
+                        items:
+                          type: object
         '401':
           $ref: '#/components/responses/InvalidApiKey'
 
@@ -77,11 +175,48 @@ paths:
                     example: "CBT progress retrieved successfully."
                   cid:
                     type: integer
-                    example: 863269
+                    example: 123456
                   training_progress:
                     type: array
                     items:
-                      $ref: '#/components/schemas/CBTProgress'
+                      type: object
+                      properties:
+                        facility:
+                          type: string
+                          example: "Academy"
+                        blocks:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              block_id:
+                                type: integer
+                                example: 13
+                              title:
+                                type: string
+                                example: "Welcome to VATCAN"
+                              sort_order:
+                                type: integer
+                                example: 1
+                              completed_chapters:
+                                type: object
+                                additionalProperties:
+                                  type: string
+                              stats:
+                                type: object
+                                properties:
+                                  completed_count:
+                                    type: integer
+                                    example: 3
+                                  total_count:
+                                    type: integer
+                                    example: 4
+                                  percentage:
+                                    type: number
+                                    example: 75
+                              updated_at:
+                                type: string
+                                example: "2026-04-19 22:30:46"
         '401':
           $ref: '#/components/responses/InvalidApiKey'
 
@@ -114,7 +249,48 @@ paths:
                   notes:
                     type: array
                     items:
-                      $ref: '#/components/schemas/TrainingNote'
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 389
+                        user_cid:
+                          type: integer
+                          example: 123456
+                        instructor_cid:
+                          type: integer
+                          example: 123321
+                        facility_id:
+                          type: integer
+                          example: 1
+                        position_trained:
+                          type: string
+                          example: "XXX_TWR"
+                        training_note:
+                          type: string
+                          example: "More situational awareness..."
+                        session_type:
+                          type: integer
+                          example: 2
+                        marking_sheet:
+                          type: string
+                          nullable: true
+                          example: null
+                        created_at:
+                          type: string
+                          example: "2020-08-23T02:08:45.000000Z"
+                        updated_at:
+                          type: string
+                          example: "2020-08-23T02:08:45.000000Z"
+                        ots_pass:
+                          type: integer
+                          example: 1
+                        friendly_time:
+                          type: string
+                          example: "2020-08-23"
+                        instructor_name:
+                          type: string
+                          example: "Mr Canada"
         '401':
           $ref: '#/components/responses/InvalidApiKey'
 
@@ -142,13 +318,13 @@ paths:
               properties:
                 instructor_cid:
                   type: integer
-                  example: 863269
+                  example: 123321
                 position:
                   type: string
-                  example: "CYEG_APP"
+                  example: "XXX_APP"
                 note:
                   type: string
-                  example: "I am a Note"
+                  example: "Woa, they parked 400 airplanes"
                 session_type:
                   type: integer
                   example: 0
@@ -181,30 +357,48 @@ paths:
                     type: object
                     properties:
                       facility:
-                        $ref: '#/components/schemas/Facility'
-                      staff:
                         type: object
                         properties:
-                          chief:
-                            $ref: '#/components/schemas/RosterUser'
-                          deputy:
-                            $ref: '#/components/schemas/RosterUser'
-                          ci:
-                            $ref: '#/components/schemas/RosterUser'
-                          ec:
-                            $ref: '#/components/schemas/RosterUser'
-                          fe:
-                            $ref: '#/components/schemas/RosterUser'
-                          wm:
-                            $ref: '#/components/schemas/RosterUser'
+                          id:
+                            type: integer
+                            example: 1
+                          name_long:
+                            type: string
+                            example: "XX FIR"
+                          name_short:
+                            type: string
+                            example: "CXXX"
+                          name_friendly:
+                            type: string
+                            example: "XX FIR (CXXX)"
+                          website_url:
+                            type: string
+                            example: "https://website.ca"
+                          fir_description:
+                            type: string
+                            example: "An FIR in Canada..."
+                          is_fir:
+                            type: integer
+                            example: 1
+                          created_at:
+                            type: string
+                          updated_at:
+                            type: string
+                      staff:
+                        type: object
+                        additionalProperties:
+                          type: object
+                          description: "Staff position profiles (chief, deputy, ci, ec, fe, wm)"
                       controllers:
                         type: array
                         items:
-                          $ref: '#/components/schemas/RosterUser'
+                          type: object
+                          description: "Home facility controllers list"
                       visitors:
                         type: array
                         items:
-                          $ref: '#/components/schemas/RosterUser'
+                          type: object
+                          description: "Visiting controllers list"
         '401':
           $ref: '#/components/responses/InvalidApiKey'
 
@@ -230,7 +424,57 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Event'
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 50
+                        name:
+                          type: string
+                          example: "The Triangle"
+                        description:
+                          type: string
+                        image_url:
+                          type: string
+                        start:
+                          type: string
+                          example: "2026-04-04 21:00:00"
+                        end:
+                          type: string
+                          example: "2026-04-05 00:00:00"
+                        airports:
+                          type: object
+                          properties:
+                            arrival:
+                              type: array
+                              items:
+                                type: string
+                            departure:
+                              type: array
+                              items:
+                                type: string
+                        forum_event_id:
+                          type: integer
+                          nullable: true
+                        facilities:
+                          type: integer
+                        user_cid:
+                          type: integer
+                        edit_cid:
+                          type: integer
+                          nullable: true
+                        is_repeating:
+                          type: boolean
+                        repeat_days:
+                          type: string
+                          nullable: true
+                        repeat_until:
+                          type: string
+                          nullable: true
+                        created_at:
+                          type: string
+                        updated_at:
+                          type: string
         '401':
           $ref: '#/components/responses/InvalidApiKey'
 
@@ -253,7 +497,46 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Event'
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1086
+                        name:
+                          type: string
+                          example: "Freight Frenzy"
+                        description:
+                          type: string
+                        image_url:
+                          type: string
+                        start:
+                          type: string
+                        end:
+                          type: string
+                        airports:
+                          type: object
+                        forum_event_id:
+                          type: integer
+                          nullable: true
+                        facilities:
+                          type: integer
+                        user_cid:
+                          type: integer
+                        edit_cid:
+                          type: integer
+                          nullable: true
+                        is_repeating:
+                          type: boolean
+                        repeat_days:
+                          type: string
+                          nullable: true
+                        repeat_until:
+                          type: string
+                          nullable: true
+                        created_at:
+                          type: string
+                        updated_at:
+                          type: string
 
   /v2/user/{cid}/instructor/assign:
     post:
@@ -279,10 +562,8 @@ paths:
               properties:
                 instructor_cid:
                   type: integer
-                  description: The CID of the instructor being assigned.
                 assigned_by:
                   type: integer
-                  description: The CID of the staff member making the assignment.
       responses:
         '200':
           description: Success
@@ -311,317 +592,6 @@ paths:
           $ref: '#/components/responses/InvalidApiKey'
 
 components:
-  schemas:
-    Event:
-      type: object
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        description:
-          type: string
-        image_url:
-          type: string
-        start:
-          type: string
-          example: "2026-03-29 00:00:00"
-        end:
-          type: string
-          example: "2026-03-29 03:00:00"
-        airports:
-          type: object
-          properties:
-            arrival:
-              type: array
-              items:
-                type: string
-            departure:
-              type: array
-              items:
-                type: string
-        forum_event_id:
-          type: integer
-          nullable: true
-        facilities:
-          type: integer
-        user_cid:
-          type: integer
-        edit_cid:
-          type: integer
-          nullable: true
-        is_repeating:
-          type: boolean
-        repeat_days:
-          type: string
-          nullable: true
-        repeat_until:
-          type: string
-          nullable: true
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-
-    User:
-      type: object
-      properties:
-        cid:
-          type: integer
-        first_name:
-          type: string
-        last_name:
-          type: string
-        email:
-          type: string
-        facility:
-          type: integer
-        facility_join:
-          type: string
-          nullable: true
-        rating:
-          type: integer
-        last_active:
-          type: string
-        flag_basic:
-          type: integer
-        flag_is_visitor:
-          type: integer
-        flag_xferOverride:
-          type: integer
-        flag_visitOverride:
-          type: integer
-        flag_soloOverride:
-          type: integer
-        transfer_visit_lock:
-          type: string
-          nullable: true
-        last_api_check:
-          type: string
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-        email_preferences:
-          type: integer
-        name_privacy_mode:
-          type: integer
-        welcome_sent:
-          type: integer
-        is_instructor:
-          type: boolean
-        is_mentor:
-          type: boolean
-        instructor:
-          type: integer
-          nullable: true
-        fir:
-          $ref: '#/components/schemas/Facility'
-        integrations:
-          type: array
-          items:
-            $ref: '#/components/schemas/Integration'
-        visiting_facilities:
-          type: array
-          items:
-            $ref: '#/components/schemas/VisitingFacility'
-
-    RosterUser:
-      type: object
-      properties:
-        cid:
-          type: integer
-        first_name:
-          type: string
-        last_name:
-          type: string
-        email:
-          type: string
-        facility:
-          type: integer
-        facility_join:
-          type: string
-          nullable: true
-        rating:
-          type: integer
-        last_active:
-          type: string
-        flag_basic:
-          type: integer
-        flag_is_visitor:
-          type: integer
-        flag_xferOverride:
-          type: integer
-        flag_visitOverride:
-          type: integer
-        flag_soloOverride:
-          type: integer
-        transfer_visit_lock:
-          type: string
-          nullable: true
-        last_api_check:
-          type: string
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-        email_preferences:
-          type: integer
-        name_privacy_mode:
-          type: integer
-        welcome_sent:
-          type: integer
-        is_instructor:
-          type: boolean
-        is_mentor:
-          type: boolean
-        instructor:
-          type: integer
-          nullable: true
-        integrations:
-          type: array
-          items:
-            $ref: '#/components/schemas/Integration'
-        fir:
-          $ref: '#/components/schemas/Facility'
-        visiting_facilities:
-          type: array
-          items:
-            $ref: '#/components/schemas/VisitingFacility'
-
-    Facility:
-      type: object
-      properties:
-        id:
-          type: integer
-        name_long:
-          type: string
-        name_short:
-          type: string
-        name_friendly:
-          type: string
-        website_url:
-          type: string
-        fir_description:
-          type: string
-        is_fir:
-          type: integer
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-
-    Integration:
-      type: object
-      properties:
-        id:
-          type: integer
-        type:
-          type: integer
-        user_cid:
-          type: integer
-        value:
-          type: string
-          nullable: true
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-
-    VisitingFacility:
-      type: object
-      properties:
-        id:
-          type: integer
-        user_cid:
-          type: integer
-        facility_id:
-          type: integer
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-        fir:
-          $ref: '#/components/schemas/Facility'
-
-    CBTProgress:
-      type: object
-      properties:
-        facility:
-          type: string
-        blocks:
-          type: array
-          items:
-            type: object
-            properties:
-              block_id:
-                type: integer
-              title:
-                type: string
-              sort_order:
-                type: integer
-              completed_chapters:
-                type: object
-                additionalProperties:
-                  type: string
-              stats:
-                type: object
-                properties:
-                  completed_count:
-                    type: integer
-                  total_count:
-                    type: integer
-                  percentage:
-                    type: number
-              updated_at:
-                type: string
-
-    TrainingNote:
-      type: object
-      properties:
-        id:
-          type: integer
-        user_cid:
-          type: integer
-        instructor_cid:
-          type: integer
-        facility_id:
-          type: integer
-        position_trained:
-          type: string
-        training_note:
-          type: string
-        session_type:
-          type: integer
-        marking_sheet:
-          type: string
-          nullable: true
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-        ots_pass:
-          type: integer
-        friendly_time:
-          type: string
-          format: date
-        instructor_name:
-          type: string
-
   securitySchemes:
     AuthorizationHeader:
       type: apiKey
@@ -632,7 +602,6 @@ components:
       type: apiKey
       name: api_key
       in: query
-
   responses:
     InvalidApiKey:
       description: API key error
