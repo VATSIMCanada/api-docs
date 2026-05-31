@@ -13,32 +13,16 @@ externalDocs:
 servers:
   - url: https://vatcan.ca/api
 tags:
-  - name: v2
-  - name: user
-  - name: facility
-  - name: division
-  - name: events
+  - name: General Calls
+    description: Publicly available and division-wide endpoints.
+  - name: FIR Calls
+    description: Authenticated endpoints restricted to specific Flight Information Regions.
 paths:
-  /events:
-    get:
-      summary: Returns list of next 5 events (for home page).
-      tags:
-        - events
-      responses:
-        '200':
-          description: A list of events.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Event'
   /v2/user/{cid}:
     get:
       summary: Returns a user's details by their CID.
       tags:
-        - user
-        - v2
+        - FIR Calls
       security:
         - AuthorizationHeader: []
         - QueryString: []
@@ -49,52 +33,6 @@ paths:
           description: The CID of the user.
           schema:
             type: integer
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '401':
-          $ref: '#/components/responses/InvalidApiKey'
-  /v2/user/{cid}/cbt:
-    get:
-      tags:
-        - user
-      summary: "Fetches the users CBT Progress."
-      parameters:
-        - name: cid
-          in: path
-          required: true
-          description: The CID of the user.
-          schema:
-            type: integer
-      security:
-        - AuthorizationHeader: []
-        - QueryString: []
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-  /v2/user/{cid}/notes:
-    get:
-      summary: Returns a user's notes by their CID.
-      tags:
-        - user
-        - v2
-      security:
-        - AuthorizationHeader: []
-        - QueryString: []
-      parameters:
-        - in: path
-          name: cid
-          schema:
-            type: integer
-          required: true
       responses:
         '200':
           description: Success
@@ -105,25 +43,94 @@ paths:
                 properties:
                   success:
                     type: string
+                    example: "User fetched successfully."
+                  data:
+                    $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/InvalidApiKey'
+
+  /v2/user/{cid}/cbt:
+    get:
+      summary: Fetches the users CBT Progress.
+      tags:
+        - FIR Calls
+      security:
+        - AuthorizationHeader: []
+        - QueryString: []
+      parameters:
+        - name: cid
+          in: path
+          required: true
+          description: The CID of the user.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: string
+                    example: "CBT progress retrieved successfully."
+                  cid:
+                    type: integer
+                    example: 863269
+                  training_progress:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CBTProgress'
+        '401':
+          $ref: '#/components/responses/InvalidApiKey'
+
+  /v2/user/{cid}/notes:
+    get:
+      summary: Returns a user's notes by their CID.
+      tags:
+        - FIR Calls
+      security:
+        - AuthorizationHeader: []
+        - QueryString: []
+      parameters:
+        - name: cid
+          in: path
+          required: true
+          description: The CID of the user.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: string
+                    example: "Notes retrieved successfully."
                   notes:
                     type: array
                     items:
                       $ref: '#/components/schemas/TrainingNote'
         '401':
           $ref: '#/components/responses/InvalidApiKey'
+
   /v2/user/{cid}/notes/create:
     post:
       summary: Create a new training note for a user.
       tags:
-        - user
-        - v2
+        - FIR Calls
       security:
         - AuthorizationHeader: []
         - QueryString: []
       parameters:
-        - in: path
-          name: cid
+        - name: cid
+          in: path
           required: true
+          description: The CID of the user.
           schema:
             type: integer
       requestBody:
@@ -135,23 +142,27 @@ paths:
               properties:
                 instructor_cid:
                   type: integer
+                  example: 1442820
                 position:
                   type: string
+                  example: "CYEG_APP"
                 note:
                   type: string
+                  example: "This guy the guy! Note test"
                 session_type:
                   type: integer
+                  example: 0
       responses:
         '200':
           description: Success
         '401':
           $ref: '#/components/responses/InvalidApiKey'
+
   /v2/facility/roster:
     get:
       summary: Returns FIR's roster.
       tags:
-        - facility
-        - v2
+        - FIR Calls
       security:
         - AuthorizationHeader: []
         - QueryString: []
@@ -165,11 +176,27 @@ paths:
                 properties:
                   success:
                     type: string
+                    example: "Fetched successfully"
                   data:
                     type: object
                     properties:
                       facility:
                         $ref: '#/components/schemas/Facility'
+                      staff:
+                        type: object
+                        properties:
+                          chief:
+                            $ref: '#/components/schemas/User'
+                          deputy:
+                            $ref: '#/components/schemas/User'
+                          ci:
+                            $ref: '#/components/schemas/User'
+                          ec:
+                            $ref: '#/components/schemas/User'
+                          fe:
+                            $ref: '#/components/schemas/User'
+                          wm:
+                            $ref: '#/components/schemas/User'
                       controllers:
                         type: array
                         items:
@@ -180,30 +207,12 @@ paths:
                           $ref: '#/components/schemas/UserWithFIR'
         '401':
           $ref: '#/components/responses/InvalidApiKey'
-  /v2/facility/activity:
-    get:
-      summary: Returns FIR's activity from last 4 weeks.
-      tags:
-        - facility
-        - v2
-      security:
-        - AuthorizationHeader: []
-        - QueryString: []
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-        '401':
-          $ref: '#/components/responses/InvalidApiKey'
+
   /v2/facility/events:
     get:
-      summary: Returns all FIR events.
+      summary: Returns all FIR events (sorted oldest to newest).
       tags:
-        - facility
-        - v2
+        - FIR Calls
       security:
         - AuthorizationHeader: []
         - QueryString: []
@@ -215,18 +224,21 @@ paths:
               schema:
                 type: object
                 properties:
+                  success:
+                    type: string
+                    example: "Fetched successfully."
                   data:
                     type: array
                     items:
                       $ref: '#/components/schemas/Event'
         '401':
           $ref: '#/components/responses/InvalidApiKey'
+
   /v2/division/events:
     get:
-      summary: Returns list of next 15 events.
+      summary: Returns list of next 15 events (sorted newest to oldest).
       tags:
-        - division
-        - v2
+        - General Calls
       responses:
         '200':
           description: Success
@@ -235,10 +247,69 @@ paths:
               schema:
                 type: object
                 properties:
+                  success:
+                    type: boolean
+                    example: true
                   data:
                     type: array
                     items:
                       $ref: '#/components/schemas/Event'
+
+  /v2/user/{cid}/instructor/assign:
+    post:
+      summary: Assign an instructor to a user.
+      tags:
+        - FIR Calls
+      security:
+        - AuthorizationHeader: []
+        - QueryString: []
+      parameters:
+        - name: cid
+          in: path
+          required: true
+          description: The CID of the student user.
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                instructor_cid:
+                  type: integer
+                  description: The CID of the instructor being assigned.
+                assigned_by:
+                  type: integer
+                  description: The CID of the staff member making the assignment.
+      responses:
+        '200':
+          description: Success
+        '401':
+          $ref: '#/components/responses/InvalidApiKey'
+
+  /v2/user/{cid}/instructor/unassign:
+    post:
+      summary: Unassign an instructor from a user.
+      tags:
+        - FIR Calls
+      security:
+        - AuthorizationHeader: []
+        - QueryString: []
+      parameters:
+        - name: cid
+          in: path
+          required: true
+          description: The CID of the student user.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+        '401':
+          $ref: '#/components/responses/InvalidApiKey'
+
 components:
   schemas:
     Event:
@@ -254,37 +325,46 @@ components:
           type: string
         start:
           type: string
+          example: "2026-03-29 00:00:00"
         end:
           type: string
+          example: "2026-03-29 03:00:00"
         airports:
           type: object
           properties:
             arrival:
               type: array
-              nullable: true
               items:
                 type: string
             departure:
               type: array
-              nullable: true
               items:
                 type: string
         forum_event_id:
           type: integer
+          nullable: true
         facilities:
           type: integer
+        user_cid:
+          type: integer
+        edit_cid:
+          type: integer
+          nullable: true
+        is_repeating:
+          type: boolean
+        repeat_days:
+          type: string
+          nullable: true
+        repeat_until:
+          type: string
+          nullable: true
         created_at:
           type: string
           format: date-time
         updated_at:
           type: string
           format: date-time
-        forum_url:
-          type: string
-        start_pretty:
-          type: string
-        end_pretty:
-          type: string
+
     User:
       type: object
       properties:
@@ -294,20 +374,30 @@ components:
           type: string
         last_name:
           type: string
+        email:
+          type: string
         facility:
           type: integer
         facility_join:
           type: string
+          nullable: true
         rating:
           type: integer
         last_active:
           type: string
         flag_basic:
-          type: boolean
+          type: integer
         flag_is_visitor:
-          type: boolean
+          type: integer
         flag_xferOverride:
-          type: boolean
+          type: integer
+        flag_visitOverride:
+          type: integer
+        flag_soloOverride:
+          type: integer
+        transfer_visit_lock:
+          type: string
+          nullable: true
         last_api_check:
           type: string
         created_at:
@@ -318,6 +408,24 @@ components:
           format: date-time
         email_preferences:
           type: integer
+        name_privacy_mode:
+          type: integer
+        welcome_sent:
+          type: integer
+        instructor:
+          type: integer
+          nullable: true
+        fir:
+          $ref: '#/components/schemas/Facility'
+        integrations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Integration'
+        visiting_facilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/VisitingFacility'
+
     UserWithFIR:
       allOf:
         - $ref: '#/components/schemas/User'
@@ -325,6 +433,7 @@ components:
           properties:
             fir:
               $ref: '#/components/schemas/Facility'
+
     Facility:
       type: object
       properties:
@@ -334,60 +443,124 @@ components:
           type: string
         name_short:
           type: string
+        name_friendly:
+          type: string
         website_url:
           type: string
         fir_description:
           type: string
         is_fir:
-          type: boolean
+          type: integer
         created_at:
           type: string
           format: date-time
         updated_at:
           type: string
           format: date-time
-    TrainingNote:
+
+    Integration:
       type: object
       properties:
         id:
           type: integer
-        cid:
+        type:
           type: integer
-        instructor_cid:
+        user_cid:
           type: integer
-        facility_id:
-          type: integer
-        training_note:
+        value:
           type: string
-        session_type:
-          type: integer
-          enum: [0, 1, 2, 3]
+          nullable: true
         created_at:
           type: string
           format: date-time
         updated_at:
           type: string
           format: date-time
-        friendly_time:
-          type: string
-          format: date
-        instructor_name:
-          type: string
-    Activity:
+
+    VisitingFacility:
       type: object
       properties:
         id:
           type: integer
         user_cid:
           type: integer
-        time:
-          type: string
+        facility_id:
+          type: integer
         created_at:
           type: string
           format: date-time
         updated_at:
           type: string
           format: date-time
+        fir:
+          $ref: '#/components/schemas/Facility'
+
+    CBTProgress:
+      type: object
+      properties:
+        facility:
+          type: string
+        blocks:
+          type: array
+          items:
+            type: object
+            properties:
+              block_id:
+                type: integer
+              title:
+                type: string
+              sort_order:
+                type: integer
+              completed_chapters:
+                type: object
+                additionalProperties:
+                  type: string
+              stats:
+                type: object
+                properties:
+                  completed_count:
+                    type: integer
+                  total_count:
+                    type: integer
+                  percentage:
+                    type: number
+              updated_at:
+                type: string
+
+    TrainingNote:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_cid:
+          type: integer
+        instructor_cid:
+          type: integer
+        facility_id:
+          type: integer
+        position_trained:
+          type: string
+        training_note:
+          type: string
+        session_type:
+          type: integer
+        marking_sheet:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        ots_pass:
+          type: integer
+        friendly_time:
+          type: string
+          format: date
+        instructor_name:
+          type: string
+
   securitySchemes:
     AuthorizationHeader:
       type: apiKey
@@ -398,6 +571,7 @@ components:
       type: apiKey
       name: api_key
       in: query
+
   responses:
     InvalidApiKey:
       description: API key error
