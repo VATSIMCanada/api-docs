@@ -478,6 +478,68 @@ paths:
         '401':
           $ref: '#/components/responses/InvalidApiKey'
 
+  /v2/facility/cbt:
+    get:
+      summary: Returns the active CBT course tracks configured for this facility FIR.
+      tags:
+        - FIR Calls
+      security:
+        - AuthorizationHeader: []
+        - QueryString: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: string
+                    example: "Fetched successfully."
+                  facility:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      name_short:
+                        type: string
+                        example: "CXXX"
+                      name_long:
+                        type: string
+                        example: "XX FIR"
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 39
+                        title:
+                          type: string
+                          example: "CXXX Configuration Setup"
+                        sort:
+                          type: integer
+                          example: 1
+                        chapters:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: integer
+                                example: 148
+                              title:
+                                type: string
+                                example: "Welcome to the FIR"
+                              sort:
+                                type: integer
+                                example: 1
+        '401':
+          $ref: '#/components/responses/InvalidApiKey'
+
   /v2/division/events:
     get:
       summary: Returns list of next 15 events (sorted newest to oldest).
@@ -537,6 +599,63 @@ paths:
                           type: string
                         updated_at:
                           type: string
+
+  /v2/division/cbt:
+    get:
+      summary: Returns global active CBT tracks managed at the division level (e.g. Academy courses).
+      tags:
+        - General Calls
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: string
+                    example: "Fetched successfully."
+                  facility:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 9
+                      name_short:
+                        type: string
+                        example: "CZAE"
+                      name_long:
+                        type: string
+                        example: "Academy"
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 13
+                        title:
+                          type: string
+                          example: "Welcome to VATCAN"
+                        sort:
+                          type: integer
+                          example: 1
+                        chapters:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: integer
+                                example: 151
+                              title:
+                                type: string
+                                example: "Welcome to VATCAN"
+                              sort:
+                                type: integer
+                                example: 1
 
   /v2/user/{cid}/instructor/assign:
     post:
