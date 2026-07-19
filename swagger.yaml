@@ -402,6 +402,129 @@ paths:
         '401':
           $ref: '#/components/responses/InvalidApiKey'
 
+  /v2/user/{cid}/notes/{id}:
+      patch:
+        summary: Update an existing training note within 24 hours of creation.
+        tags:
+          - FIR Calls
+        security:
+          - AuthorizationHeader: []
+          - QueryString: []
+        parameters:
+          - name: cid
+            in: path
+            required: true
+            description: The CID of the controller user.
+            schema:
+              type: integer
+          - name: id
+            in: path
+            required: true
+            description: The unique Database ID of the training note to update.
+            schema:
+              type: integer
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - instructor_cid
+                  - position
+                  - note
+                  - session_type
+                properties:
+                  instructor_cid:
+                    type: integer
+                    description: Must match the original instructor CID who created the note.
+                    example: 123321
+                  position:
+                    type: string
+                    description: The position string (max 10 characters).
+                    example: "XXX_APP"
+                  note:
+                    type: string
+                    description: The updated session text (3 to 5000 characters).
+                    example: "CORRECTION: They parked 450 airplanes safely instead of 400."
+                  session_type:
+                    type: integer
+                    description: The numeric type identifier (max 5).
+                    example: 0
+        responses:
+          '200':
+            description: Note updated successfully.
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    success:
+                      type: string
+                      example: "Note updated successfully."
+                    data:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 389
+                        user_cid:
+                          type: integer
+                          example: 123456
+                        instructor_cid:
+                          type: integer
+                          example: 123321
+                        facility_id:
+                          type: integer
+                          example: 1
+                        position_trained:
+                          type: string
+                          example: "XXX_APP"
+                        training_note:
+                          type: string
+                          example: "CORRECTION: They parked 450 airplanes safely instead of 400."
+                        session_type:
+                          type: integer
+                          example: 0
+                        created_at:
+                          type: string
+                          example: "2026-07-19T08:00:00.000000Z"
+                        updated_at:
+                          type: string
+                          example: "2026-07-19T09:45:00.000000Z"
+          '400':
+            description: Validation failure (e.g., empty string, note text too long, missing fields).
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      example: "Validation failed."
+          '403':
+            description: Authorization failure or time-lock active (instructor CID mismatch, or entry older than 24 hours).
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      example: "This training note is locked and can no longer be edited."
+          '404':
+            description: The note ID or target user CID does not match an existing log entry.
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      example: "Training note not found."
+          '401':
+            $ref: '#/components/responses/InvalidApiKey'
+
   /v2/facility/events:
     get:
       summary: Returns all FIR events (sorted oldest to newest).
