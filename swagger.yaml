@@ -334,6 +334,129 @@ paths:
         '401':
           $ref: '#/components/responses/InvalidApiKey'
 
+  /v2/user/{cid}/notes/{id}:
+    patch:
+      summary: Update an existing training note within 24 hours of creation.
+      tags:
+        - FIR Calls
+      security:
+        - AuthorizationHeader: []
+        - QueryString: []
+      parameters:
+        - name: cid
+          in: path
+          required: true
+          description: The CID of the controller user.
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          description: The unique Database ID of the training note to update.
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - instructor_cid
+                - position
+                - note
+                - session_type
+              properties:
+                instructor_cid:
+                  type: integer
+                  description: Must match the original instructor CID who created the note.
+                  example: 123321
+                position:
+                  type: string
+                  description: The position string (max 10 characters).
+                  example: "XXX_APP"
+                note:
+                  type: string
+                  description: The updated session text (3 to 5000 characters).
+                  example: "CORRECTION: They parked 450 airplanes safely instead of 400."
+                session_type:
+                  type: integer
+                  description: The numeric type identifier (max 5).
+                  example: 0
+      responses:
+        '200':
+          description: Note updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: string
+                    example: "Note updated successfully."
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 389
+                      user_cid:
+                        type: integer
+                        example: 123456
+                      instructor_cid:
+                        type: integer
+                        example: 123321
+                      facility_id:
+                        type: integer
+                        example: 1
+                      position_trained:
+                        type: string
+                        example: "XXX_APP"
+                      training_note:
+                        type: string
+                        example: "CORRECTION: They parked 450 airplanes safely instead of 400."
+                      session_type:
+                        type: integer
+                        example: 0
+                      created_at:
+                        type: string
+                        example: "2026-07-19T08:00:00.000000Z"
+                      updated_at:
+                        type: string
+                        example: "2026-07-19T09:45:00.000000Z"
+        '400':
+          description: Validation failure (e.g., empty string, note text too long, missing fields).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Validation failed."
+        '403':
+          description: Authorization failure or time-lock active (instructor CID mismatch, or entry older than 24 hours).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "This training note is locked and can no longer be edited."
+        '404':
+          description: The note ID or target user CID does not match an existing log entry.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Training note not found."
+        '401':
+          $ref: '#/components/responses/InvalidApiKey'
+
   /v2/facility/roster:
     get:
       summary: Returns FIR's roster.
@@ -402,128 +525,207 @@ paths:
         '401':
           $ref: '#/components/responses/InvalidApiKey'
 
-  /v2/user/{cid}/notes/{id}:
-      patch:
-        summary: Update an existing training note within 24 hours of creation.
-        tags:
-          - FIR Calls
-        security:
-          - AuthorizationHeader: []
-          - QueryString: []
-        parameters:
-          - name: cid
-            in: path
-            required: true
-            description: The CID of the controller user.
-            schema:
-              type: integer
-          - name: id
-            in: path
-            required: true
-            description: The unique Database ID of the training note to update.
-            schema:
-              type: integer
-        requestBody:
-          required: true
+  /v2/facility/endorsements:
+    get:
+      summary: Returns all active controller endorsements for the requesting FIR.
+      tags:
+        - FIR Calls
+      security:
+        - AuthorizationHeader: []
+        - QueryString: []
+      responses:
+        '200':
+          description: Success
           content:
             application/json:
               schema:
                 type: object
-                required:
-                  - instructor_cid
-                  - position
-                  - note
-                  - session_type
                 properties:
-                  instructor_cid:
-                    type: integer
-                    description: Must match the original instructor CID who created the note.
-                    example: 123321
-                  position:
+                  success:
                     type: string
-                    description: The position string (max 10 characters).
-                    example: "XXX_APP"
-                  note:
-                    type: string
-                    description: The updated session text (3 to 5000 characters).
-                    example: "CORRECTION: They parked 450 airplanes safely instead of 400."
-                  session_type:
-                    type: integer
-                    description: The numeric type identifier (max 5).
-                    example: 0
-        responses:
-          '200':
-            description: Note updated successfully.
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    success:
-                      type: string
-                      example: "Note updated successfully."
-                    data:
+                    example: "Fetched endorsements successfully."
+                  facility:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      name_short:
+                        type: string
+                        example: "CZEG"
+                  data:
+                    type: array
+                    items:
                       type: object
                       properties:
-                        id:
+                        cid:
                           type: integer
-                          example: 389
-                        user_cid:
-                          type: integer
-                          example: 123456
-                        instructor_cid:
-                          type: integer
-                          example: 123321
-                        facility_id:
-                          type: integer
-                          example: 1
-                        position_trained:
+                          example: 863269
+                        name:
                           type: string
-                          example: "XXX_APP"
-                        training_note:
-                          type: string
-                          example: "CORRECTION: They parked 450 airplanes safely instead of 400."
-                        session_type:
+                          example: "Cody Newman"
+                        rating:
                           type: integer
-                          example: 0
-                        created_at:
-                          type: string
-                          example: "2026-07-19T08:00:00.000000Z"
-                        updated_at:
-                          type: string
-                          example: "2026-07-19T09:45:00.000000Z"
-          '400':
-            description: Validation failure (e.g., empty string, note text too long, missing fields).
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    error:
-                      type: string
-                      example: "Validation failed."
-          '403':
-            description: Authorization failure or time-lock active (instructor CID mismatch, or entry older than 24 hours).
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    error:
-                      type: string
-                      example: "This training note is locked and can no longer be edited."
-          '404':
-            description: The note ID or target user CID does not match an existing log entry.
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    error:
-                      type: string
-                      example: "Training note not found."
-          '401':
-            $ref: '#/components/responses/InvalidApiKey'
+                          example: 10
+                        endorsements:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: integer
+                                example: 18
+                              endorsement_id:
+                                type: integer
+                                example: 7
+                              name_short:
+                                type: string
+                                example: "SC"
+                              name_long:
+                                type: string
+                                example: "Super Centre"
+                              assigned_by:
+                                type: integer
+                                example: 1366416
+                              created_at:
+                                type: string
+                                example: "2024-01-09 05:09:28"
+        '401':
+          $ref: '#/components/responses/InvalidApiKey'
+
+  /v2/facility/endorsement/add:
+    post:
+      summary: Grant a controller endorsement for the requesting FIR.
+      tags:
+        - FIR Calls
+      security:
+        - AuthorizationHeader: []
+        - QueryString: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - cid
+                - endorsement
+              properties:
+                cid:
+                  type: integer
+                  description: CID of the target controller.
+                  example: 863269
+                endorsement:
+                  type: string
+                  description: Endorsement type or tier (e.g. T1, T2, SC, EVT, T1GND, T1TWR, T1TML).
+                  example: "T1"
+                position:
+                  type: string
+                  description: Optional position shorthand (GND, TWR, TML, CTR).
+                  example: "TWR"
+                assigned_by:
+                  type: integer
+                  description: CID of the staff member or instructor assigning the endorsement.
+                  example: 1366416
+      responses:
+        '200':
+          description: Endorsement granted successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: string
+                    example: "Endorsement T1TWR granted to Cody Newman successfully."
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 422
+                      user_cid:
+                        type: integer
+                        example: 863269
+                      endorsement_id:
+                        type: integer
+                        example: 3
+                      facility_id:
+                        type: integer
+                        example: 1
+                      assigned_by:
+                        type: integer
+                        example: 1366416
+                      created_at:
+                        type: string
+                        example: "2026-10-23T20:54:09.000000Z"
+                      updated_at:
+                        type: string
+                        example: "2026-10-23T20:54:09.000000Z"
+        '400':
+          description: Validation error or controller already holds this endorsement.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User already holds this endorsement in this facility."
+        '401':
+          $ref: '#/components/responses/InvalidApiKey'
+
+  /v2/facility/endorsement/remove:
+    post:
+      summary: Remove a controller endorsement for the requesting FIR.
+      tags:
+        - FIR Calls
+      security:
+        - AuthorizationHeader: []
+        - QueryString: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - cid
+                - endorsement
+              properties:
+                cid:
+                  type: integer
+                  description: CID of the target controller.
+                  example: 863269
+                endorsement:
+                  type: string
+                  description: Endorsement code to remove (e.g. T1, T2, SC, EVT, T1TWR).
+                  example: "T1TWR"
+      responses:
+        '200':
+          description: Endorsement removed successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: string
+                    example: "Endorsement T1TWR removed from Cody Newman."
+        '400':
+          description: Validation error.
+        '404':
+          description: User or endorsement assignment not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Endorsement assignment not found."
+        '401':
+          $ref: '#/components/responses/InvalidApiKey'
 
   /v2/facility/events:
     get:
