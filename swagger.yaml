@@ -25,7 +25,6 @@ paths:
         - FIR Calls
       security:
         - AuthorizationHeader: []
-        - QueryString: []
       parameters:
         - name: cid
           in: path
@@ -154,7 +153,6 @@ paths:
         - FIR Calls
       security:
         - AuthorizationHeader: []
-        - QueryString: []
       parameters:
         - name: cid
           in: path
@@ -227,7 +225,6 @@ paths:
         - FIR Calls
       security:
         - AuthorizationHeader: []
-        - QueryString: []
       parameters:
         - name: cid
           in: path
@@ -301,7 +298,6 @@ paths:
         - FIR Calls
       security:
         - AuthorizationHeader: []
-        - QueryString: []
       parameters:
         - name: cid
           in: path
@@ -341,7 +337,6 @@ paths:
         - FIR Calls
       security:
         - AuthorizationHeader: []
-        - QueryString: []
       parameters:
         - name: cid
           in: path
@@ -464,7 +459,6 @@ paths:
         - FIR Calls
       security:
         - AuthorizationHeader: []
-        - QueryString: []
       responses:
         '200':
           description: Success
@@ -532,7 +526,6 @@ paths:
         - FIR Calls
       security:
         - AuthorizationHeader: []
-        - QueryString: []
       responses:
         '200':
           description: Success
@@ -600,7 +593,6 @@ paths:
         - FIR Calls
       security:
         - AuthorizationHeader: []
-        - QueryString: []
       requestBody:
         required: true
         content:
@@ -682,7 +674,6 @@ paths:
         - FIR Calls
       security:
         - AuthorizationHeader: []
-        - QueryString: []
       requestBody:
         required: true
         content:
@@ -734,7 +725,6 @@ paths:
         - FIR Calls
       security:
         - AuthorizationHeader: []
-        - QueryString: []
       responses:
         '200':
           description: Success
@@ -810,7 +800,6 @@ paths:
         - FIR Calls
       security:
         - AuthorizationHeader: []
-        - QueryString: []
       responses:
         '200':
           description: Success
@@ -989,7 +978,6 @@ paths:
         - FIR Calls
       security:
         - AuthorizationHeader: []
-        - QueryString: []
       parameters:
         - name: cid
           in: path
@@ -1021,7 +1009,6 @@ paths:
         - FIR Calls
       security:
         - AuthorizationHeader: []
-        - QueryString: []
       parameters:
         - name: cid
           in: path
@@ -1035,6 +1022,564 @@ paths:
         '401':
           $ref: '#/components/responses/InvalidApiKey'
 
+  /v2/exams/assignable:
+    get:
+      summary: Lists the exams an instructor may assign.
+      description: >-
+        Returns the active exams the given instructor may assign. With an FIR key, results are limited to
+        the FIR's own exams plus the global exams (Gander Oceanic and the Academy). The instructor must hold
+        the `training.exams` permission and belong to the FIR (home member or holds a role there).
+        Can be disabled by division leadership, in which case it returns 503.
+      tags:
+        - FIR Calls
+      security:
+        - AuthorizationHeader: []
+      parameters:
+        - name: instructor_cid
+          in: query
+          required: true
+          description: CID of the instructor the request is made on behalf of.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: string
+                    example: "Assignable exams retrieved successfully."
+                  instructor_cid:
+                    type: integer
+                    example: 123321
+                  exams:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Exam'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/InvalidApiKey'
+        '403':
+          description: Instructor lacks permission or does not belong to your FIR.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "This instructor does not belong to your facility."
+        '404':
+          description: Instructor not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "This instructor does not exist."
+        '503':
+          $ref: '#/components/responses/ExamApiDisabled'
+
+  /v2/user/{cid}/exams:
+    get:
+      summary: Returns a user's exam statuses.
+      description: >-
+        Returns the current status of every exam the user has been assigned or attempted. Pass `exam_id`
+        to check a single exam (returned as `not_assigned` if the user has never had it).
+        With an FIR key, the user must be a member or visitor of the FIR.
+
+
+        Status values: `pending` (assigned or in progress), `cooldown` (waiting before a retake),
+        `passed`, `failed`, `expired`, `not_assigned`.
+      tags:
+        - FIR Calls
+      security:
+        - AuthorizationHeader: []
+      parameters:
+        - name: cid
+          in: path
+          required: true
+          description: The CID of the student.
+          schema:
+            type: integer
+        - name: exam_id
+          in: query
+          required: false
+          description: Only return the status of this exam.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: string
+                    example: "Exam statuses retrieved successfully."
+                  cid:
+                    type: integer
+                    example: 123456
+                  exams:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ExamStatus'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/InvalidApiKey'
+        '403':
+          description: The user is not a member or visitor of your FIR.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "You do not have permission to view this controllers exams."
+        '404':
+          $ref: '#/components/responses/UserNotFound'
+        '503':
+          $ref: '#/components/responses/ExamApiDisabled'
+
+  /v2/user/{cid}/exams/assign:
+    post:
+      summary: Assigns an exam to a user on behalf of an instructor.
+      description: >-
+        Assigns an exam from `/v2/exams/assignable` to the user. Uses the same rules as the website
+        (no duplicate active assignment, retake cooldowns are respected). The assignment is labelled
+        "via API" in the user's action log. With a sandbox key the request is validated but nothing is created.
+      tags:
+        - FIR Calls
+      security:
+        - AuthorizationHeader: []
+      parameters:
+        - name: cid
+          in: path
+          required: true
+          description: The CID of the student.
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - exam_id
+                - instructor_cid
+              properties:
+                exam_id:
+                  type: integer
+                  description: ID of an exam returned by `/v2/exams/assignable`.
+                  example: 12
+                instructor_cid:
+                  type: integer
+                  description: CID of the instructor assigning the exam.
+                  example: 123321
+      responses:
+        '200':
+          description: Sandbox key only. The request was validated and nothing was created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: string
+                    example: "Sandbox request validated. No assignment was created."
+                  sandbox:
+                    type: boolean
+                    example: true
+                  exam:
+                    $ref: '#/components/schemas/Exam'
+                  student_cid:
+                    type: integer
+                    example: 123456
+        '201':
+          description: Exam assigned.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: string
+                    example: "Exam 'CXXX S2' assigned to CID 123456."
+                  sandbox:
+                    type: boolean
+                    example: false
+                  assignment:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 5512
+                      exam:
+                        $ref: '#/components/schemas/Exam'
+                      student_cid:
+                        type: integer
+                        example: 123456
+                      instructor_cid:
+                        type: integer
+                        example: 123321
+                      status:
+                        type: string
+                        example: "assigned"
+                      expires:
+                        type: string
+                        format: date-time
+                        example: "2026-11-25T12:00:00+00:00"
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/InvalidApiKey'
+        '403':
+          description: >-
+            Instructor lacks permission or is not in your FIR, the user is not a member or visitor of your FIR,
+            or the exam cannot be assigned by this instructor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "This exam does not exist or cannot be assigned by this instructor."
+        '404':
+          description: User or instructor not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "This user does not exist."
+        '409':
+          description: The user already has this exam assigned, or is in a retake cooldown.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          $ref: '#/components/responses/AlreadyProcessing'
+        '503':
+          $ref: '#/components/responses/ExamApiDisabled'
+
+  /v2/user/{cid}/solo:
+    get:
+      summary: Returns a user's active solo certifications and days used.
+      description: >-
+        Returns the user's active solo certifications, plus the days used and remaining on every position
+        they have ever held a solo on. A user may hold a solo on a position for 90 days in total across all
+        certifications (120 with a one-time division override). With an FIR key, the user must be a member,
+        visitor or pending visitor of the FIR. Can be disabled by division leadership, in which case it returns 503.
+      tags:
+        - FIR Calls
+      security:
+        - AuthorizationHeader: []
+      parameters:
+        - name: cid
+          in: path
+          required: true
+          description: The CID of the student.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: string
+                    example: "Solo certifications retrieved successfully."
+                  cid:
+                    type: integer
+                    example: 123456
+                  override:
+                    type: boolean
+                    description: Whether a division override is waiting to be used (adds 30 days, consumed by the next issue or extension).
+                    example: false
+                  lifetime_cap:
+                    type: integer
+                    description: Maximum total days per position for this user (90, or 120 with an override).
+                    example: 90
+                  certifications:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SoloCertification'
+                  positions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        position:
+                          type: string
+                          example: "CYXX_TWR"
+                        days_used:
+                          type: integer
+                          example: 70
+                        days_remaining:
+                          type: integer
+                          example: 20
+        '401':
+          $ref: '#/components/responses/InvalidApiKey'
+        '403':
+          $ref: '#/components/responses/SoloStudentNotInFir'
+        '404':
+          $ref: '#/components/responses/UserNotFound'
+        '503':
+          $ref: '#/components/responses/SoloApiDisabled'
+
+  /v2/user/{cid}/solo/issue:
+    post:
+      summary: Issues a solo certification to a user.
+      description: >-
+        Issues a solo certification covering up to 5 positions. If the requested length is more than the
+        days the user has left on those positions, it is shortened; compare `requested_days` and
+        `granted_days` in the response. Fails with 409 if an active solo already covers one of the positions
+        (extend that one instead). Uses a waiting division override. The instructor must hold the
+        `training.certifications` permission and belong to your FIR. Labelled "via API" in the user's action log.
+        With a sandbox key the request is validated but nothing is created.
+      tags:
+        - FIR Calls
+      security:
+        - AuthorizationHeader: []
+      parameters:
+        - name: cid
+          in: path
+          required: true
+          description: The CID of the student.
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - instructor_cid
+                - positions
+                - length
+              properties:
+                instructor_cid:
+                  type: integer
+                  description: CID of the instructor issuing the solo.
+                  example: 123321
+                positions:
+                  type: array
+                  description: 1 to 5 position callsigns (7 to 12 characters each). Case-insensitive.
+                  minItems: 1
+                  maxItems: 5
+                  items:
+                    type: string
+                    example: "CYXX_TWR"
+                  example: ["CYXX_TWR", "CYXX_GND"]
+                length:
+                  type: integer
+                  description: Requested length in days (1 to 120). Shortened to the days remaining.
+                  minimum: 1
+                  maximum: 120
+                  example: 30
+      responses:
+        '200':
+          description: Sandbox key only. The request was validated and nothing was created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SoloIssueResponse'
+        '201':
+          description: Solo certification issued.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SoloIssueResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/InvalidApiKey'
+        '403':
+          description: Instructor lacks permission or is not in your FIR, or the user is not in your FIR.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "This user does not have permission to manage solo certifications."
+        '404':
+          description: User or instructor not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "This instructor does not exist."
+        '409':
+          description: An active solo already covers one of the positions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "This controller already has an active solo certification (ID 77) covering CYXX_TWR. Extend it instead."
+        '422':
+          description: The user has no days left on one or more of these positions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "This controller has already reached the maximum allowed 90 days across one or more of these positions."
+        '429':
+          $ref: '#/components/responses/AlreadyProcessing'
+        '503':
+          $ref: '#/components/responses/SoloApiDisabled'
+
+  /v2/user/{cid}/solo/{id}/extend:
+    post:
+      summary: Extends a user's solo certification.
+      description: >-
+        Moves the expiry to 30 days from today, capped at the certification's `max_expiry` (its own
+        90-day length, or the user's 90-day total per position, whichever is reached first). Uses a waiting
+        division override. Labelled "via API" in the user's action log. With a sandbox key the request
+        is validated and the new expiry is returned, but nothing is saved.
+      tags:
+        - FIR Calls
+      security:
+        - AuthorizationHeader: []
+      parameters:
+        - name: cid
+          in: path
+          required: true
+          description: The CID of the student.
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          description: ID of the active solo certification (from `/v2/user/{cid}/solo`).
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InstructorRequest'
+      responses:
+        '200':
+          description: Solo certification extended (or validated, for sandbox keys).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: string
+                    example: "Solo certification extended to 2026-12-18."
+                  sandbox:
+                    type: boolean
+                    example: false
+                  previous_expiry:
+                    type: string
+                    format: date
+                    example: "2026-11-28"
+                  certification:
+                    $ref: '#/components/schemas/SoloCertification'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/InvalidApiKey'
+        '403':
+          description: Instructor lacks permission or is not in your FIR, or the user is not in your FIR.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          $ref: '#/components/responses/SoloNotFound'
+        '422':
+          description: The solo is already at its maximum allowed expiry.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Solo certification cannot be extended further! Maximum allowed period reached."
+        '429':
+          $ref: '#/components/responses/AlreadyProcessing'
+        '503':
+          $ref: '#/components/responses/SoloApiDisabled'
+
+  /v2/user/{cid}/solo/{id}/revoke:
+    post:
+      summary: Revokes a user's solo certification.
+      description: >-
+        Ends an active solo certification immediately. Days used up to today still count toward the user's
+        90-day total for those positions. Labelled "via API" in the user's action log. With a sandbox key
+        the request is validated but nothing is changed.
+      tags:
+        - FIR Calls
+      security:
+        - AuthorizationHeader: []
+      parameters:
+        - name: cid
+          in: path
+          required: true
+          description: The CID of the student.
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          description: ID of the active solo certification (from `/v2/user/{cid}/solo`).
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InstructorRequest'
+      responses:
+        '200':
+          description: Solo certification revoked (or validated, for sandbox keys).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: string
+                    example: "Solo certification 77 revoked."
+                  sandbox:
+                    type: boolean
+                    example: false
+                  id:
+                    type: integer
+                    example: 77
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/InvalidApiKey'
+        '403':
+          description: Instructor lacks permission or is not in your FIR, or the user is not in your FIR.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          $ref: '#/components/responses/SoloNotFound'
+        '429':
+          $ref: '#/components/responses/AlreadyProcessing'
+        '503':
+          $ref: '#/components/responses/SoloApiDisabled'
+
 components:
   securitySchemes:
     AuthorizationHeader:
@@ -1042,10 +1587,6 @@ components:
       name: Authorization
       in: header
       description: 'Format: `Token [api_key]`'
-    QueryString:
-      type: apiKey
-      name: api_key
-      in: query
   responses:
     InvalidApiKey:
       description: API key error
@@ -1058,3 +1599,236 @@ components:
                 type: string
               message:
                 type: string
+    ValidationError:
+      description: The request failed validation.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Validation failure."
+              hint:
+                type: object
+                description: Field names mapped to their validation messages.
+                additionalProperties:
+                  type: array
+                  items:
+                    type: string
+    UserNotFound:
+      description: User not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "This user does not exist."
+    AlreadyProcessing:
+      description: Another request for this user is still being processed, or the rate limit was hit.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "A request for this controller is already being processed."
+    ExamApiDisabled:
+      description: The exam API has been disabled by division leadership.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Exam API disabled."
+            message: "The exam API has been disabled by division leadership. Please use the website or contact the division."
+    SoloApiDisabled:
+      description: The solo certification API has been disabled by division leadership.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Solo certification API disabled."
+            message: "The solo certification API has been disabled by division leadership. Please use the website or contact the division."
+    SoloStudentNotInFir:
+      description: The user is not a member, visitor or pending visitor of your FIR.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "This controller is not a member, visitor or pending visitor at the specified facility."
+    SoloNotFound:
+      description: User, instructor, or an active solo certification with this ID for this user not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "This controller has no active solo certification with that ID."
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+    InstructorRequest:
+      type: object
+      required:
+        - instructor_cid
+      properties:
+        instructor_cid:
+          type: integer
+          description: CID of the instructor making the change. Must hold the `training.certifications` permission and belong to your FIR.
+          example: 123321
+    Exam:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 12
+        name:
+          type: string
+          example: "CXXX S2"
+        facility:
+          type: string
+          nullable: true
+          example: "CXXX"
+        pass_percentage:
+          type: integer
+          example: 80
+        required_cbt:
+          type: integer
+          nullable: true
+          description: ID of the CBT block that must be completed first, if any.
+          example: null
+        mandatory:
+          type: boolean
+          example: false
+    ExamStatus:
+      type: object
+      properties:
+        exam_id:
+          type: integer
+          example: 12
+        exam_name:
+          type: string
+          example: "CXXX S2"
+        facility:
+          type: string
+          nullable: true
+          example: "CXXX"
+        status:
+          type: string
+          enum: [pending, cooldown, passed, failed, expired, not_assigned]
+          example: "pending"
+        has_passed:
+          type: boolean
+          example: false
+        assignment:
+          type: object
+          nullable: true
+          description: The assignment the status is based on, or null if never assigned.
+          properties:
+            id:
+              type: integer
+              example: 5512
+            status:
+              type: string
+              description: Raw assignment status (assigned, in_progress, cooldown, completed, expired, abandoned).
+              example: "assigned"
+            instructor_cid:
+              type: integer
+              example: 123321
+            via_api:
+              type: boolean
+              example: true
+            assigned_at:
+              type: string
+              format: date-time
+              nullable: true
+            expires:
+              type: string
+              format: date-time
+              nullable: true
+            available_at:
+              type: string
+              format: date-time
+              nullable: true
+              description: When a retake becomes available (cooldown only).
+            started_at:
+              type: string
+              format: date-time
+              nullable: true
+            completed_at:
+              type: string
+              format: date-time
+              nullable: true
+        latest_result:
+          type: object
+          nullable: true
+          properties:
+            score:
+              type: integer
+              example: 92
+            passed:
+              type: boolean
+              example: true
+            completed_at:
+              type: string
+              format: date-time
+              nullable: true
+    SoloCertification:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 77
+        student_cid:
+          type: integer
+          example: 123456
+        instructor_cid:
+          type: integer
+          example: 123321
+        positions:
+          type: array
+          items:
+            type: string
+          example: ["CYXX_TWR", "CYXX_GND"]
+        issued:
+          type: string
+          format: date
+          example: "2026-11-18"
+        expiry:
+          type: string
+          format: date
+          example: "2026-12-18"
+        max_expiry:
+          type: string
+          format: date
+          description: The latest date this solo can currently be extended to.
+          example: "2027-02-16"
+        via_api:
+          type: boolean
+          description: Whether the solo was issued through the API.
+          example: true
+    SoloIssueResponse:
+      type: object
+      properties:
+        success:
+          type: string
+          example: "Solo certification issued to CID 123456."
+        sandbox:
+          type: boolean
+          example: false
+        requested_days:
+          type: integer
+          example: 30
+        granted_days:
+          type: integer
+          description: Days actually granted. Lower than requested_days if the user had fewer days left.
+          example: 30
+        certification:
+          $ref: '#/components/schemas/SoloCertification'
